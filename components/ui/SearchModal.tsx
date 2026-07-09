@@ -5,134 +5,143 @@ import { Search, X, Clock, TrendingUp } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { products } from "@/data/products";
 import { useRouter } from "next/navigation";
+import { C } from "@/lib/styles";
 
 const trending = ["Nike Air Max", "Yeezy 350", "Jordan 1", "Supreme Box Logo", "New Balance"];
 
 export function SearchModal() {
-  const { searchOpen, setSearchOpen, searchQuery, setSearchQuery, recentSearches, addRecentSearch } = useStore();
+  const { searchOpen, setSearchOpen } = useStore();
+  const [query, setQuery] = useState("");
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const [results, setResults] = useState(products);
+
+  const results = query.trim()
+    ? products.filter((p) => {
+        const q = query.toLowerCase();
+        return p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+      })
+    : [];
 
   useEffect(() => {
     if (searchOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+      setTimeout(() => inputRef.current?.focus(), 80);
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      setQuery("");
     }
   }, [searchOpen]);
 
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      setResults(products.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.tags.some((t) => t.toLowerCase().includes(q))
-      ));
-    } else {
-      setResults([]);
-    }
-  }, [searchQuery]);
-
-  useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); setSearchOpen(true); }
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setSearchOpen(true); }
       if (e.key === "Escape") setSearchOpen(false);
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [setSearchOpen]);
 
-  const handleSearch = (q: string) => {
-    addRecentSearch(q);
+  const go = (q: string) => {
+    setRecentSearches((prev) => [q, ...prev.filter((s) => s !== q)].slice(0, 5));
     setSearchOpen(false);
-    setSearchQuery("");
     router.push(`/shop?q=${encodeURIComponent(q)}`);
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: "10px", color: C.textMuted, fontFamily: "'Space Grotesk', sans-serif",
+    textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: "12px",
+    display: "flex", alignItems: "center", gap: "6px",
+  };
+  const chipBtn: React.CSSProperties = {
+    display: "block", width: "100%", textAlign: "left", padding: "9px 12px",
+    background: "none", border: "none", borderRadius: "10px",
+    color: C.textSecondary, fontFamily: "'Inter', sans-serif", fontSize: "14px",
+    cursor: "pointer", transition: "all 0.15s",
   };
 
   return (
     <AnimatePresence>
       {searchOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-start justify-center pt-20 px-4"
-          style={{ background: "rgba(9,9,11,0.9)", backdropFilter: "blur(20px)" }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={() => setSearchOpen(false)}
-        >
+          style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "80px", padding: "80px 24px 24px", background: "rgba(9,9,11,0.88)", backdropFilter: "blur(24px)" }}>
+
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.97 }}
+            initial={{ opacity: 0, y: -16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.97 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="w-full max-w-2xl bg-[#141418] rounded-[20px] border border-[#2A2A35] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.6)]"
+            exit={{ opacity: 0, y: -16, scale: 0.97 }}
+            transition={{ type: "spring", damping: 22, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
-          >
-            {/* Input */}
-            <div className="flex items-center gap-4 px-5 py-4 border-b border-[#2A2A35]">
-              <Search size={20} className="text-[#7C5CFF] shrink-0" />
+            style={{ width: "100%", maxWidth: "620px", background: C.card, borderRadius: "20px", border: `1px solid ${C.borderLight}`, overflow: "hidden", boxShadow: "0 40px 100px rgba(0,0,0,0.7)" }}>
+
+            {/* Input row */}
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px", borderBottom: `1px solid ${C.border}` }}>
+              <Search size={20} color={C.accent} style={{ flexShrink: 0 }} />
               <input
                 ref={inputRef}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && searchQuery.trim()) handleSearch(searchQuery); }}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && query.trim()) go(query.trim()); }}
                 placeholder="Search sneakers, brands, styles..."
-                className="flex-1 bg-transparent text-white text-base outline-none placeholder:text-text-secondary font-body"
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: "16px", fontFamily: "'Inter', sans-serif" }}
               />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-text-secondary hover:text-white">
+              {query && (
+                <button onClick={() => setQuery("")} style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted, display: "flex", padding: "4px" }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#fff")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = C.textMuted)}>
                   <X size={16} />
                 </button>
               )}
-              <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 bg-[#09090B] rounded text-xs text-text-muted border border-[#2A2A35]">
-                <span>ESC</span>
-              </kbd>
+              <kbd style={{ padding: "4px 8px", background: C.bg, borderRadius: "6px", fontSize: "11px", color: C.textMuted, fontFamily: "'Inter', sans-serif", border: `1px solid ${C.border}`, flexShrink: 0 }}>ESC</kbd>
             </div>
 
-            <div className="p-4 max-h-[60vh] overflow-y-auto">
+            {/* Body */}
+            <div style={{ padding: "20px", maxHeight: "60vh", overflowY: "auto" }}>
+
+              {/* Live results */}
               {results.length > 0 ? (
                 <div>
-                  <p className="text-xs text-text-secondary uppercase tracking-wider mb-3 font-heading">Results</p>
+                  <p style={labelStyle}><Search size={11} /> Results</p>
                   {results.slice(0, 5).map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => { router.push(`/product/${p.id}`); setSearchOpen(false); setSearchQuery(""); }}
-                      className="w-full flex items-center gap-4 p-3 rounded-[12px] hover:bg-[#09090B] transition-colors group text-left"
-                    >
-                      <div className="w-12 h-12 rounded-[10px] overflow-hidden bg-[#09090B] shrink-0">
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                    <button key={p.id}
+                      onClick={() => { router.push(`/product/${p.id}`); setSearchOpen(false); }}
+                      style={{ display: "flex", alignItems: "center", gap: "14px", width: "100%", padding: "10px 12px", background: "none", border: "none", borderRadius: "12px", cursor: "pointer", textAlign: "left", transition: "background 0.15s" }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = C.bg)}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "none")}>
+                      <div style={{ width: "48px", height: "48px", borderRadius: "10px", overflow: "hidden", background: C.bg, flexShrink: 0 }}>
+                        <img src={p.images[0]} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       </div>
-                      <div>
-                        <p className="text-white text-sm font-medium font-heading group-hover:text-[#7C5CFF] transition-colors">{p.name}</p>
-                        <p className="text-text-secondary text-xs">{p.brand} · ₹{p.price.toLocaleString("en-IN")}</p>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, color: "#fff", fontSize: "14px", marginBottom: "2px" }}>{p.name}</p>
+                        <p style={{ fontFamily: "'Inter', sans-serif", color: C.textSecondary, fontSize: "12px" }}>{p.brand} · ₹{p.price.toLocaleString("en-IN")}</p>
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid-2" style={{ gap: "32px" }}>
+                  {/* Recent */}
                   {recentSearches.length > 0 && (
                     <div>
-                      <p className="text-xs text-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2 font-heading">
-                        <Clock size={12} /> Recent
-                      </p>
+                      <p style={labelStyle}><Clock size={11} /> Recent</p>
                       {recentSearches.map((s) => (
-                        <button key={s} onClick={() => handleSearch(s)} className="block text-sm text-text-secondary hover:text-white py-1.5 transition-colors font-body">
+                        <button key={s} onClick={() => go(s)} style={chipBtn}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.bg; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "none"; (e.currentTarget as HTMLElement).style.color = C.textSecondary; }}>
                           {s}
                         </button>
                       ))}
                     </div>
                   )}
+                  {/* Trending */}
                   <div>
-                    <p className="text-xs text-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2 font-heading">
-                      <TrendingUp size={12} /> Trending
-                    </p>
+                    <p style={labelStyle}><TrendingUp size={11} /> Trending</p>
                     {trending.map((t) => (
-                      <button key={t} onClick={() => handleSearch(t)} className="block text-sm text-text-secondary hover:text-white py-1.5 transition-colors font-body">
+                      <button key={t} onClick={() => go(t)} style={chipBtn}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.bg; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "none"; (e.currentTarget as HTMLElement).style.color = C.textSecondary; }}>
                         {t}
                       </button>
                     ))}

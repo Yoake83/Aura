@@ -16,7 +16,7 @@ export function Testimonials() {
           <p style={{ color: C.accent, fontSize: "11px", fontFamily: "'Inter', sans-serif", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>What people say</p>
           <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: "#fff" }}>Community Love</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+        <div className="grid-3" style={{ gap: "20px" }}>
           {testimonials.map((t, i) => (
             <motion.div key={t.name} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
               style={{ background: C.card, borderRadius: "20px", border: `1px solid ${C.border}`, padding: "28px" }}>

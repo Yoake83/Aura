@@ -21,7 +21,7 @@ export function FeaturedProducts() {
             View All <ArrowRight size={14} />
           </Link>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+        <div className="grid-4">
           {products.map((p, i) => (
             <motion.div key={p.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}>
               <ProductCard product={p} />

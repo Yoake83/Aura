@@ -63,7 +63,7 @@ export default function CheckoutPage() {
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "32px" }}>
+        <div className="grid-checkout" style={{ gap: "32px" }}>
           {/* Left */}
           <div>
             <AnimatePresence mode="wait">
