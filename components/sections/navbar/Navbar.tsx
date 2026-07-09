@@ -78,12 +78,12 @@ export function Navbar() {
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.textSecondary; }}>
             <Search size={16} />
           </button>
-          <button style={iconBtn}
+          <Link href="/wishlist" style={{ ...iconBtn, display: "flex", textDecoration: "none" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = C.accent; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.textSecondary; }}>
             <Heart size={16} />
             {wishQty > 0 && <span style={badge}>{wishQty}</span>}
-          </button>
+          </Link>
           <button style={{ ...iconBtn, background: C.accent, borderColor: C.accent, color: "#fff" }} onClick={() => setCartOpen(true)}>
             <ShoppingBag size={16} />
             {cartQty > 0 && <span style={badge}>{cartQty}</span>}
